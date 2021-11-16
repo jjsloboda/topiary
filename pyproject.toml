@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "topiary"
+version = "0.1.0"
+description = "Tool to prune unneeded deps from pyproject.toml"
+authors = ["John Sloboda <sloboda@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+toml = "^0.10.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
