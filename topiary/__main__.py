@@ -46,5 +46,4 @@ def main():
     toml.dump('pyproject.toml.new')
 
 
-if __name__ == '__main__':
-    main()
+main()
