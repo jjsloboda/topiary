@@ -28,7 +28,7 @@ def main():
     # TODO proper argparse
     filepaths = sys.argv[1:]
 
-    pyproj = toml.read('pyproject.toml')
+    pyproj = toml.load('pyproject.toml')
     dep_modules = set(pyproj['tools.poetry.dependencies'].keys())
 
     imported_modules = [extract_modules(fp) for fp in filepaths]
