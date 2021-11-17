@@ -29,7 +29,8 @@ def main():
     filepaths = sys.argv[1:]
 
     pyproj = toml.load('pyproject.toml')
-    dep_modules = set(pyproj['tools.poetry.dependencies'].keys())
+    pyproj_deps = pyproj['tool']['poetry']['dependencies']
+    dep_modules = set(pyproj_deps.keys())
 
     imported_modules = [extract_modules(fp) for fp in filepaths]
     print(f'imported modules: {imported_modules}')
@@ -40,7 +41,7 @@ def main():
     unnecessary_modules = dep_modules - imported_modules
     for dep in dep_modules:
         if dep in unnecessary_modules:
-            del pyproj['tools.poetry.dependencies'][dep]
+            del pyproj_deps[dep]
 
     print(toml.dumps(pyproj))
     toml.dump('pyproject.toml.new')
