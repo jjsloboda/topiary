@@ -9,7 +9,7 @@ def from_site_packages(modname: str) -> bool:
     return '/site-packages/' in importlib.util.find_spec(modname).origin
 
 
-def extract_modules(filename: str):
+def extract_modules(filepath: str):
     with open(filepath) as f:
         tree = ast.parse(f.read())
 
