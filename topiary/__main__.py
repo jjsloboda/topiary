@@ -10,7 +10,7 @@ def from_site_packages(modname: str) -> bool:
     print(f'modname: {modname}')
     try:
         return '/site-packages/' in importlib.util.find_spec(modname).origin
-    except ModuleNotFoundError:
+    except (AttributeError, ModuleNotFoundError):
         return False
 
 
