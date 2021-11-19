@@ -1,15 +1,17 @@
 import ast
 import importlib
 import sys
+from typing import List
 
 import toml
 
 
 def from_site_packages(modname: str) -> bool:
+    print(f'modname: {modname}')
     return '/site-packages/' in importlib.util.find_spec(modname).origin
 
 
-def extract_modules(filepath: str):
+def extract_imports(filepath: str) -> List[str]:
     with open(filepath) as f:
         tree = ast.parse(f.read())
 
@@ -21,7 +23,7 @@ def extract_modules(filepath: str):
             if node.level == 0:
                 mods.append(node.module)
 
-    return set(m for m in mods if from_site_packages(m))
+    return [m for m in mods if from_site_packages(m)]
 
 
 def main():
@@ -30,21 +32,22 @@ def main():
 
     pyproj = toml.load('pyproject.toml')
     pyproj_deps = pyproj['tool']['poetry']['dependencies']
-    dep_modules = set(pyproj_deps.keys())
 
-    imported_modules = [extract_modules(fp) for fp in filepaths]
+    imported_modules = set(imp for fp in filepaths for imp in extract_imports(fp))
     print(f'imported modules: {imported_modules}')
 
-    dep_modules = extract_deps()
+    dep_modules = set(pyproj_deps.keys())
     print(f'dep modules: {dep_modules}')
 
     unnecessary_modules = dep_modules - imported_modules
+    unnecessary_modules.pop('python', None)
     for dep in dep_modules:
         if dep in unnecessary_modules:
             del pyproj_deps[dep]
 
     print(toml.dumps(pyproj))
-    toml.dump('pyproject.toml.new')
+    with open('pyproject.toml.new', 'w') as f:
+        toml.dump(pyproj, f)
 
 
 main()
