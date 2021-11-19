@@ -8,7 +8,10 @@ import toml
 
 def from_site_packages(modname: str) -> bool:
     print(f'modname: {modname}')
-    return '/site-packages/' in importlib.util.find_spec(modname).origin
+    try:
+        return '/site-packages/' in importlib.util.find_spec(modname).origin
+    except ModuleNotFoundError:
+        return False
 
 
 def extract_imports(filepath: str) -> List[str]:
