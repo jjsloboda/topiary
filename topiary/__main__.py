@@ -6,12 +6,12 @@ from typing import List
 import toml
 
 
-def from_site_packages(modname: str) -> bool:
+def not_stdlib_modules(modname: str) -> bool:
     print(f'modname: {modname}')
     try:
         return '/site-packages/' in importlib.util.find_spec(modname).origin
     except (AttributeError, ModuleNotFoundError):
-        return False
+        return True
 
 
 def extract_imports(filepath: str) -> List[str]:
@@ -26,7 +26,7 @@ def extract_imports(filepath: str) -> List[str]:
             if node.level == 0:
                 mods.append(node.module)
 
-    return [m for m in mods if from_site_packages(m)]
+    return [m for m in mods if not_stdlib_modules(m)]
 
 
 def main():
