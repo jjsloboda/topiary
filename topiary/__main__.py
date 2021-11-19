@@ -43,7 +43,7 @@ def main():
     print(f'dep modules: {dep_modules}')
 
     unnecessary_modules = dep_modules - imported_modules
-    unnecessary_modules.pop('python', None)
+    unnecessary_modules.discard('python')
     for dep in dep_modules:
         if dep in unnecessary_modules:
             del pyproj_deps[dep]
