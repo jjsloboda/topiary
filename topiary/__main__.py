@@ -1,5 +1,6 @@
 import ast
 import importlib
+import re
 import sys
 from typing import List, Set
 
@@ -11,7 +12,9 @@ def not_stdlib_modules(modname: str) -> bool:
     """
     print(f'modname: {modname}')
     try:
-        return '/site-packages/' in importlib.util.find_spec(modname).origin
+        spec = importlib.util.find_spec(modname)
+        print(f'module spec: {spec}, parent: {spec.parent}')
+        return '/site-packages/' in spec.origin
     except (AttributeError, ModuleNotFoundError):
         return True
 
@@ -41,12 +44,13 @@ def write_new_pyproject(old_filename: str, new_filename: str, unnecessary_deps: 
     
     def is_deps_block_start(line: str):
         # Supports poetry only for now
+        # NOTE: Does not support PEP 0631 at this time!
         return line == '[tool.poetry.dependencies]\n'
 
     def is_deps_block_end(line: str):
-        return line == '\n'
+        return line.startswith('[')
 
-    DEP_RE = re.compile(r'^[-_a-z]+')
+    DEP_RE = re.compile(r'^[-_a-zA-Z0-9]+')
     def dep_is_unnecessary(line: str, unnecessary_deps: Set[str]):
         if match := DEP_RE.match(line):
             return match.group(0) in unnecessary_deps
@@ -54,12 +58,12 @@ def write_new_pyproject(old_filename: str, new_filename: str, unnecessary_deps: 
     with open(old_filename) as f_in, open(new_filename, 'w') as f_out:
         in_deps_block = False
         for line in f_in:
+            if not in_deps_block or not dep_is_unnecessary(line, unnecessary_deps):
+                f_out.write(line)
             if in_deps_block and is_deps_block_end(line):
                 in_deps_block = False
             elif is_deps_block_start(line):
                 in_deps_block = True
-            elif not in_deps_block or not dep_is_unnecessary(line, unnecessary_deps):
-                f_out.write(line)
 
 
 def main():
@@ -77,7 +81,7 @@ def main():
 
     unnecessary_modules = dep_modules - imported_modules
     unnecessary_modules.discard('python')  # python is always necessary but never imported
-    write_new_pyproject('pyproject.toml', 'pyproject.toml.new', unnecessary_deps)
+    write_new_pyproject('pyproject.toml', 'pyproject.toml.new', unnecessary_modules)
 
 
 main()
