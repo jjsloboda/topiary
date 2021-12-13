@@ -8,6 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.7"
 toml = "^0.10.2"
+pip-api = "^0.0.26"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

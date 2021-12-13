@@ -2,8 +2,9 @@ import ast
 import importlib
 import re
 import sys
-from typing import List, Set
+from typing import Dict, Iterable, List, Set
 
+import pip_api
 import toml
 
 
@@ -33,7 +34,24 @@ def extract_pkg_imports(filepath: str) -> List[str]:
             if node.level == 0:
                 mods.append(node.module)
 
-    return [m for m in mods if not_stdlib_modules(m)]
+    return [m.split('.')[0] for m in mods if not_stdlib_modules(m)]
+
+
+def make_mod_to_pkg_map(pkgs: Iterable[str]) -> Dict[str, str]:
+    pkg_set = set(pkgs)
+    pkg_set.remove('python')
+    dists = {name: pkg for name, pkg in pip_api.installed_distributions(local=False).items() if name in pkg_set}
+    dist_set = set(dists.keys())
+    if any(pkg not in dist_set for pkg in pkg_set):
+        raise Exception(f'some pkgs in pyproject.toml are not installed: {pkg_set - dist_set}')
+    mod_to_pkg_map = {}
+    for d in dists.values():
+        top_level_filename = f'{d.location}/{d.name.replace("-", "_")}-{d.version}.dist-info/top_level.txt'
+        with open(top_level_filename) as f:
+            top_level_mod = f.read().rstrip('\n')
+            mod_to_pkg_map[top_level_mod] = d.name
+    print(mod_to_pkg_map)
+    return mod_to_pkg_map
 
 
 def write_new_pyproject(old_filename: str, new_filename: str, unnecessary_deps: Set[str]):
@@ -76,12 +94,15 @@ def main():
     imported_modules = set(imp for fp in filepaths for imp in extract_pkg_imports(fp))
     print(f'imported modules: {imported_modules}')
 
-    dep_modules = set(pyproj_deps.keys())
-    print(f'dep modules: {dep_modules}')
+    dep_pkgs = pyproj_deps.keys()
+    print(f'dep pkgs: {dep_pkgs}')
+    mod_to_pkg_map = make_mod_to_pkg_map(dep_pkgs)
+    imported_pkgs = [pkg for mod, pkg in mod_to_pkg_map.items() if mod in imported_modules]
+    print(f'imp pkgs: {imported_pkgs}')
 
-    unnecessary_modules = dep_modules - imported_modules
-    unnecessary_modules.discard('python')  # python is always necessary but never imported
-    write_new_pyproject('pyproject.toml', 'pyproject.toml.new', unnecessary_modules)
+    unnecessary_pkgs = dep_pkgs - imported_pkgs
+    unnecessary_pkgs.discard('python')  # python is always necessary but never imported
+    write_new_pyproject('pyproject.toml', 'pyproject.toml.new', unnecessary_pkgs)
 
 
 main()
