@@ -96,7 +96,8 @@ def is_test(filename: str):
 
 def main():
     # TODO proper argparse
-    #filepaths = sys.argv[1:]
+    in_place = len(sys.argv) > 1 and sys.argv[1] == '-i'
+
     filepaths = [os.path.join(d, fp) for d, _, fps in os.walk('.') for fp in fps]
     code_filepaths = [fp for fp in filepaths if is_python_file(fp) and not is_test(fp)]
     print(code_filepaths)
@@ -116,3 +117,6 @@ def main():
     unnecessary_pkgs = dep_pkgs - imported_pkgs
     unnecessary_pkgs.discard('python')  # python is always necessary but never imported
     write_new_pyproject('pyproject.toml', 'pyproject.toml.new', unnecessary_pkgs)
+
+    if in_place:
+        os.replace('pyproject.toml.new', 'pyproject.toml')
