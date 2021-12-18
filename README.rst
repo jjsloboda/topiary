@@ -10,7 +10,7 @@ Installation
 
 .. code-block:: console
 
-   $ pip install https://github.com/jjsloboda/topiary.git
+   $ pip install git+https://github.com/jjsloboda/topiary.git
 
 Usage
 =====
