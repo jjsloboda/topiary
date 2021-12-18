@@ -29,4 +29,7 @@ setup(
             'Programming Language :: Python :: 3.10',
             'Programming Language :: Python :: Implementation :: CPython',
         ],
+        entry_points={
+            'console_scripts': ['topiary=topiary:main'],
+        },
 )
