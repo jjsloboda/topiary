@@ -1,5 +1,6 @@
 import ast
 import importlib
+import os
 import re
 import sys
 from typing import Dict, Iterable, List, Set
@@ -84,14 +85,26 @@ def write_new_pyproject(old_filename: str, new_filename: str, unnecessary_deps: 
                 in_deps_block = True
 
 
+def is_python_file(filename: str):
+    return filename.endswith('.py')
+
+
+def is_test(filename: str):
+    # TODO: read pytest config file for testfile patterns
+    return 'test' in filename
+
+
 def main():
     # TODO proper argparse
-    filepaths = sys.argv[1:]
+    #filepaths = sys.argv[1:]
+    filepaths = [os.path.join(d, fp) for d, _, fps in os.walk('.') for fp in fps]
+    code_filepaths = [fp for fp in filepaths if is_python_file(fp) and not is_test(fp)]
+    print(code_filepaths)
 
     pyproj = toml.load('pyproject.toml')
     pyproj_deps = pyproj['tool']['poetry']['dependencies']
 
-    imported_modules = set(imp for fp in filepaths for imp in extract_pkg_imports(fp))
+    imported_modules = set(imp for fp in code_filepaths for imp in extract_pkg_imports(fp))
     print(f'imported modules: {imported_modules}')
 
     dep_pkgs = pyproj_deps.keys()
