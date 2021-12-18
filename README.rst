@@ -8,6 +8,8 @@ Right now it only supports poetry projects.
 Installation
 ============
 
+Run the following in the enclosing python environment (not directly in the project's poetry virtualenv):
+
 .. code-block:: console
 
    $ pip install git+https://github.com/jjsloboda/topiary.git
@@ -15,18 +17,16 @@ Installation
 Usage
 =====
 
-Right now, ``topiary`` expects to run within a python environment where the poetry environment with all the packages have already been installed, and are available through ``site-packages/``.
-
 .. code-block:: console
 
    $ cd my_project_root
-   $ topiary
+   $ poetry run topiary
 
 Will create a new ``pyproject.toml.new`` that is a copy of ``pyproject.toml`` with unnecessary package dependencies trimmed out.
 
 .. code-block:: console
 
    $ cd my_project_root
-   $ topiary -i
+   $ poetry run topiary -i
 
 Will trim out the unnecessary package dependencies in ``pyproject.toml`` in place.
