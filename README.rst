@@ -15,6 +15,8 @@ Installation
 Usage
 =====
 
+Right now, ``topiary`` expects to run within a python environment where the poetry environment with all the packages have already been installed, and are available through ``site-packages/``.
+
 .. code-block:: console
 
    $ cd my_project_root
